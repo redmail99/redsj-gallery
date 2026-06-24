@@ -603,7 +603,7 @@ __CARDS__
 async function loadPortraitCards() {
   const msg = document.getElementById('portrait-msg');
   try {
-    const res = await fetch('/portrait-cards.json');
+    const res = await fetch('portrait-cards.json');
     const data = await res.json();
     renderPortrait(data.cards || []);
   } catch (e) {
@@ -616,7 +616,7 @@ function renderPortrait(cards) {
   const grid = document.getElementById('portrait-grid');
   const ts = Date.now();
   grid.innerHTML = cards.map(c =>
-    '<div class="portrait-card" onclick="openLightbox(\'/portrait-output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
+    '<div class="portrait-card" onclick="openLightbox('portrait-output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
     '  <img class="portrait-img" src="/portrait-output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
     '  <div class="portrait-body">' +
     '    <div><strong>' + c.name + '</strong><span class="meta">' + (c.date || '') + '</span></div>' +
@@ -633,7 +633,7 @@ async function regeneratePortrait() {
   msg.textContent = 'Generating new portrait styles\u2026';
 
   try {
-    const res = await fetch('/regenerate-portraits', { method: 'POST' });
+    const res = await fetch('regenerate-portraits', { method: 'POST' });
     const data = await res.json();
     if (data.success && data.count > 0) {
       renderPortrait(data.cards);
@@ -654,7 +654,7 @@ loadPortraitCards();
 async function loadCards() {
   const msg = document.getElementById('promo-msg');
   try {
-    const res = await fetch('/cards.json');
+    const res = await fetch('cards.json');
     const data = await res.json();
     render(data.cards || []);
   } catch (e) {
@@ -667,7 +667,7 @@ function render(cards) {
   const grid = document.getElementById('promo-grid');
   const ts = Date.now();
   grid.innerHTML = cards.map(c =>
-    '<div class="promo-card" onclick="openLightbox(\'/output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
+    '<div class="promo-card" onclick="openLightbox('output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
     '  <img class="promo-img" src="/output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
     '  <div class="promo-body">' +
     '    <div><strong>' + c.name + '</strong><span class="meta">' + (c.date || '') + '</span></div>' +
@@ -684,7 +684,7 @@ async function regenerate() {
   msg.textContent = 'Generating new cosmic styles\u2026';
 
   try {
-    const res = await fetch('/regenerate', { method: 'POST' });
+    const res = await fetch('regenerate', { method: 'POST' });
     const data = await res.json();
     if (data.success && data.count > 0) {
       render(data.cards);
