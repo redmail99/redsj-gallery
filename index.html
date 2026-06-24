@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedSJ — Cover Gallery</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #121212; color: #e8e6e3; min-height: 100vh;
+  }
+  header {
+    text-align: center; padding: 3rem 1rem 2rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  header h1 { font-size: 1.8rem; font-weight: 600; }
+  header h1 span { color: #1DB954; }
+  header p { margin-top: .5rem; color: #999; font-size: .95rem; }
+  .badge {
+    display: inline-block; margin-top: .8rem; padding: .3rem 1rem;
+    border-radius: 20px; background: rgba(255,255,255,.06);
+    font-size: .8rem; color: #aaa;
+  }
+  .section {
+    max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;
+  }
+  .section-title {
+    font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .section-title .bar {
+    flex: 1; height: 1px; background: rgba(255,255,255,.08);
+  }
+  .grid {
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .card {
+    display: flex; gap: 1rem;
+    background: #18181d; border-radius: 12px;
+    overflow: hidden; border: 1px solid rgba(255,255,255,.06);
+    transition: transform .2s, box-shadow .2s;
+    padding: .75rem;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  }
+  .card-img {
+    width: 80px; height: 80px; min-width: 80px;
+    border-radius: 8px; object-fit: cover; background: #222;
+    cursor: pointer;
+  }
+  .card-body {
+    display: flex; align-items: center; justify-content: space-between;
+    flex: 1; min-width: 0;
+  }
+  .card-info { min-width: 0; }
+  .card-info strong {
+    color: #e8e6e3; display: block; font-size: .95rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-info .meta { font-size: .75rem; color: #888; }
+  .card-links {
+    display: flex; gap: .35rem; flex-shrink: 0; align-items: center;
+  }
+  .stream-link {
+    display: inline-block; padding: .2rem .55rem;
+    border-radius: 14px; border: 1px solid;
+    font-size: .65rem; font-weight: 600; text-decoration: none;
+    transition: all .2s; white-space: nowrap;
+    letter-spacing: .3px;
+  }
+  .stream-link:hover {
+    transform: scale(1.05);
+    filter: brightness(1.3);
+  }
+
+  .grid-promo {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.2rem;
+  }
+  .promo-card {
+    background: #18181d; border-radius: 12px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,.06);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .promo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.5);
+  }
+  .promo-img {
+    width: 100%; display: block; aspect-ratio: 1200 / 630;
+    object-fit: cover; background: #222;
+  }
+  .promo-body { padding: .8rem 1rem; display: flex; justify-content: space-between; align-items: center; }
+  .promo-body strong { color: #e8e6e3; font-size: .95rem; display: block; }
+  .promo-body .meta { font-size: .8rem; }
+
+  .grid-portrait {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.2rem;
+  }
+  .portrait-card {
+    background: #18181d; border-radius: 12px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,.06);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .portrait-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.5);
+  }
+  .portrait-img {
+    width: 100%; display: block; aspect-ratio: 540 / 960;
+    object-fit: cover; background: #222;
+  }
+  .portrait-body { padding: .8rem 1rem; display: flex; justify-content: space-between; align-items: center; }
+  .portrait-body strong { color: #e8e6e3; font-size: .9rem; display: block; }
+  .portrait-body .meta { font-size: .75rem; }
+
+  .btn-regen {
+    padding: .6rem 1.5rem; border: none;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #7c3aed, #c084fc);
+    color: #fff; font-size: .85rem; font-weight: 600; cursor: pointer;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-regen:hover { opacity: .85; }
+  .btn-regen:active { transform: scale(.96); }
+  .btn-regen:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .btn-regen .spinner {
+    display: none; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+    border-radius: 50%; animation: spin .6s linear infinite;
+    vertical-align: middle; margin-right: .4rem;
+  }
+  .btn-regen.loading .spinner { display: inline-block; }
+  .btn-regen.loading .label-text { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #promo-msg { margin-top: .6rem; font-size: .8rem; color: #888; min-height: 1.2em; }
+
+  @media (max-width: 720px) {
+    header h1 { font-size: 1.3rem; }
+    .card-links { flex-wrap: wrap; gap: .25rem; }
+    .stream-link { font-size: .6rem; padding: .15rem .45rem; }
+    .grid-promo { grid-template-columns: 1fr; }
+    .grid-portrait { grid-template-columns: repeat(2, 1fr); gap: .8rem; }
+  }
+  @media (max-width: 480px) {
+    .card-img { width: 60px; height: 60px; min-width: 60px; }
+    .card-body { flex-direction: column; align-items: flex-start; gap: .4rem; }
+    .card-links { flex-wrap: wrap; }
+  }
+
+  /* ── Shared Keyframes (used by lightbox effects) ── */
+  @keyframes glareSweep {
+    0% { transform: translateX(-100%) skewX(-18deg); }
+    100% { transform: translateX(300%) skewX(-18deg); }
+  }
+  @keyframes lightBreathe {
+    0%, 100% { opacity: .2; transform: scale(1); }
+    50% { opacity: 1; transform: scale(2); }
+  }
+  @keyframes hueSpin {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+  }
+  @keyframes grainShift {
+    0% { transform: translate(0, 0); }
+    33% { transform: translate(-6px, 4px); }
+    66% { transform: translate(4px, -6px); }
+  }
+
+  /* ── Lightbox ── */
+  .lightbox {
+    display: none; position: fixed; inset: 0; z-index: 10000;
+    justify-content: center; align-items: center;
+    cursor: zoom-out;
+  }
+  .lightbox.open { display: flex; }
+  .lb-bg {
+    position: absolute; inset: -60px;
+    background-size: cover; background-position: center;
+    filter: blur(50px) brightness(.5);
+    transition: filter .5s; z-index: 0;
+  }
+  .lb-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background: rgba(0,0,0,.55);
+  }
+  .lb-overlay::after {
+    content: ''; position: absolute; inset: 0; z-index: 1;
+    pointer-events: none; opacity: 0;
+  }
+  .lb-img {
+    max-width: 90vw; max-height: 90vh;
+    border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.7);
+    object-fit: contain; cursor: default; z-index: 5;
+    position: relative;
+  }
+  .lb-close {
+    position: absolute; top: 20px; right: 24px; z-index: 10;
+    color: rgba(255,255,255,.6); font-size: 2rem; cursor: pointer;
+    transition: color .2s; line-height: 1;
+  }
+  .lb-close:hover { color: #fff; }
+
+  /* ── Lightbox Effects (scoped to .lightbox) ── */
+  .lightbox .effect-bar {
+    position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 10;
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(0,0,0,.7); backdrop-filter: blur(14px);
+    padding: 8px 18px; border-radius: 30px;
+    border: 1px solid rgba(255,255,255,.08);
+    font-size: .75rem; color: rgba(255,255,255,.5);
+    user-select: none;
+    transition: opacity .4s; opacity: .7;
+  }
+  .lightbox .effect-bar:hover { opacity: 1; }
+  .lightbox .effect-bar .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,.12);
+    transition: all .4s ease; cursor: pointer;
+  }
+  .lightbox .effect-bar .dot:hover { background: rgba(255,255,255,.3); }
+  .lightbox .effect-bar .dot.active {
+    background: #c084fc; box-shadow: 0 0 12px rgba(192,132,252,.6);
+    transform: scale(1.35);
+  }
+  /* Glare */
+  .lightbox.ef-glare::after {
+    content: ''; position: absolute; inset: -100px; z-index: 6;
+    pointer-events: none;
+    background: linear-gradient(110deg,
+      transparent 25%, rgba(255,255,255,.08) 38%,
+      rgba(255,255,255,.18) 50%, rgba(255,255,255,.08) 62%, transparent 75%);
+    animation: glareSweep 2.5s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  /* Blur progresivo */
+  .lightbox.ef-blur .lb-bg {
+    animation: blurCycle 2.5s ease-in-out infinite;
+    will-change: filter;
+  }
+  .lightbox.ef-blur .lb-img {
+    animation: blurImgCycle 2.5s ease-in-out infinite;
+    will-change: filter;
+  }
+  @keyframes blurCycle {
+    0%, 100% { filter: blur(50px) brightness(.5); }
+    30% { filter: blur(30px) brightness(.6); }
+    60% { filter: blur(15px) brightness(.7); }
+  }
+  @keyframes blurImgCycle {
+    0%, 100% { filter: blur(0px); }
+    30% { filter: blur(2px); }
+    60% { filter: blur(5px); }
+  }
+
+  /* Light */
+  .lightbox.ef-light::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 40%, rgba(255,200,80,.2) 0%, transparent 60%);
+    animation: lightBreathe 2.5s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  /* Scale */
+  .lightbox.ef-scale .lb-img {
+    animation: scaleBreathe 2.5s ease-in-out infinite;
+    will-change: transform;
+  }
+  @keyframes scaleBreathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+
+  /* Hue */
+  .lightbox.ef-hue .lb-img,
+  .lightbox.ef-hue .lb-bg {
+    animation: hueSpin 2.5s linear infinite;
+    will-change: filter;
+  }
+
+  /* Float */
+  .lightbox.ef-float .lb-img {
+    animation: floatDrift 2.5s ease-in-out infinite;
+    will-change: transform;
+  }
+  @keyframes floatDrift {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  /* Grain */
+  .lightbox.ef-grain .lb-overlay::after {
+    opacity: .08;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat; background-size: 256px 256px;
+    animation: grainShift .4s steps(3) infinite;
+  }
+
+  /* Border */
+  .lightbox.ef-border .lb-img {
+    border-radius: 16px;
+    animation: borderGlow 2.5s linear infinite;
+    will-change: box-shadow;
+  }
+  @keyframes borderGlow {
+    0%   { box-shadow: 0 0 30px rgba(255,0,100,.6), 0 20px 60px rgba(0,0,0,.7); }
+    20%  { box-shadow: 0 0 30px rgba(255,80,0,.6), 0 20px 60px rgba(0,0,0,.7); }
+    40%  { box-shadow: 0 0 30px rgba(200,255,0,.6), 0 20px 60px rgba(0,0,0,.7); }
+    60%  { box-shadow: 0 0 30px rgba(0,255,150,.6), 0 20px 60px rgba(0,0,0,.7); }
+    80%  { box-shadow: 0 0 30px rgba(50,100,255,.6), 0 20px 60px rgba(0,0,0,.7); }
+    100% { box-shadow: 0 0 30px rgba(255,0,100,.6), 0 20px 60px rgba(0,0,0,.7); }
+  }
+
+  .promo-card, .portrait-card { cursor: pointer; }
+  .card-img { cursor: pointer; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎵 <span>RedSJ</span> — Cover Gallery</h1>
+  <p>All album &amp; single cover art from Spotify</p>
+  <div class="badge"><strong>11 covers</strong> · <a href="https://open.spotify.com/artist/6hwevbERwOIUzk90IRHUnE" target="_blank" style="color:#1DB954;text-decoration:none;">Open in Spotify →</a></div>
+</header>
+
+<div class="section">
+  <div class="grid">
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b2736d162b468d0d3ac45cbe382b" alt="Luminal Heartbeats" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>Luminal Heartbeats</strong>
+          <span class="meta">Single · 2023</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/366MoJw8XWYCqCMW0e3JYN" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+Luminal+Heartbeats" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+Luminal+Heartbeats" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20Luminal%20Heartbeats" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+Luminal+Heartbeats" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b2730e3eb38f1f690833331a3e6f" alt="A new dawn" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>A new dawn</strong>
+          <span class="meta">Single · 2024</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/6DeC1CkjFsOuOqvzdvqFDJ" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+A+new+dawn" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+A+new+dawn" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20A%20new%20dawn" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+A+new+dawn" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b2735c74e60cba996f514fa3a734" alt="Echoes of infinity" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>Echoes of infinity</strong>
+          <span class="meta">Single · 2024</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/2wH27DMlGYhMEKk1us95Zg" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+Echoes+of+infinity" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+Echoes+of+infinity" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20Echoes%20of%20infinity" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+Echoes+of+infinity" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b273690120f07bced59246a828a2" alt="Introspection" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>Introspection</strong>
+          <span class="meta">Single · 2024</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/5eSr7SG4YX3wpYEMce5Wnp" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+Introspection" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+Introspection" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20Introspection" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+Introspection" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b2731c6b8bab8d8cad186b0da892" alt="We share a world" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>We share a world</strong>
+          <span class="meta">EP · 2025</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/2cAsxT3zYB98Ey5bL1poHo" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+We+share+a+world" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+We+share+a+world" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20We%20share%20a%20world" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+We+share+a+world" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b2736e1501821f38949a31d9c404" alt="Beneath the Stars" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>Beneath the Stars</strong>
+          <span class="meta">Single · 2025</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/6c4Q3wMCz4AV88Jf3TaJKI" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+Beneath+the+Stars" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+Beneath+the+Stars" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20Beneath%20the%20Stars" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+Beneath+the+Stars" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b273bc69f31cf9bc7df082082678" alt="Memories of Tomorrow" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>Memories of Tomorrow</strong>
+          <span class="meta">Single · 2025</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/6Oii91dF5Jw93Ysqe9trGg" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+Memories+of+Tomorrow" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+Memories+of+Tomorrow" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20Memories%20of%20Tomorrow" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+Memories+of+Tomorrow" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b2738aa2519e879dd86e1eff1159" alt="Inner Dialogue" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>Inner Dialogue</strong>
+          <span class="meta">Single · 2026</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/72oYvrCwCnjOGswCElEcxI" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+Inner+Dialogue" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+Inner+Dialogue" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20Inner%20Dialogue" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+Inner+Dialogue" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b273d9f5e9a4ac2aa697d2c9bda6" alt="Signal from a distant heart" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>Signal from a distant heart</strong>
+          <span class="meta">Single · 2026</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/0ULMD63Cx2vAdlbffo5FZi" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+Signal+from+a+distant+heart" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+Signal+from+a+distant+heart" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20Signal%20from%20a%20distant%20heart" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+Signal+from+a+distant+heart" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b273b5ea25e6c7f09d6d323def32" alt="Where We Once Walked" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>Where We Once Walked</strong>
+          <span class="meta">Single · 2026</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/0e1Sb4fljQyljVFlcbBRQm" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+Where+We+Once+Walked" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+Where+We+Once+Walked" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20Where%20We%20Once%20Walked" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+Where+We+Once+Walked" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="https://i.scdn.co/image/ab67616d0000b273b47c99a2933a0f4c6a7b714b" alt="Where We Once Walked (Reflection)" loading="lazy">
+      <div class="card-body">
+        <div class="card-info">
+          <strong>Where We Once Walked (Reflection)</strong>
+          <span class="meta">Single · 2026</span>
+        </div>
+        <div class="card-links">
+          <a href="https://open.spotify.com/album/1rjA7EJUZqrPkEYYjHTyif" target="_blank" class="stream-link" style="color:#1DB954;border-color:#1DB95444;" title="Spotify">Spotify</a>
+    <a href="https://music.youtube.com/search?q=RedSJ+Where+We+Once+Walked+(Reflection)" target="_blank" class="stream-link" style="color:#FF0000;border-color:#FF000044;" title="YouTube">YouTube</a>
+    <a href="https://music.apple.com/us/search?term=RedSJ+Where+We+Once+Walked+(Reflection)" target="_blank" class="stream-link" style="color:#FA243A;border-color:#FA243A44;" title="Apple">Apple</a>
+    <a href="https://www.deezer.com/search/RedSJ%20Where%20We%20Once%20Walked%20(Reflection)" target="_blank" class="stream-link" style="color:#A238FF;border-color:#A238FF44;" title="Deezer">Deezer</a>
+    <a href="https://tidal.com/search?q=RedSJ+Where+We+Once+Walked+(Reflection)" target="_blank" class="stream-link" style="color:#FFFFFF;border-color:#FFFFFF44;" title="Tidal">Tidal</a>
+    
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <span>✨ Promo Cards</span>
+    <span class="bar"></span>
+    <button class="btn-regen" id="btn-regen" onclick="regenerate()">
+      <span class="spinner"></span>
+      <span class="label-text">New Style</span>
+    </button>
+  </div>
+  <div class="grid-promo" id="promo-grid"></div>
+  <div id="promo-msg"></div>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <span>📱 Portrait Cards</span>
+    <span class="bar"></span>
+    <button class="btn-regen" id="btn-regen-portrait" onclick="regeneratePortrait()">
+      <span class="spinner"></span>
+      <span class="label-text">New Style</span>
+    </button>
+  </div>
+  <div class="grid-portrait" id="portrait-grid"></div>
+  <div id="portrait-msg"></div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lb-bg" id="lb-bg"></div>
+  <div class="lb-overlay"></div>
+  <span class="lb-close" onclick="event.stopPropagation(); closeLightbox()">&times;</span>
+  <img class="lb-img" id="lb-img" src="" alt="">
+
+</div>
+
+<script>
+async function loadPortraitCards() {
+  const msg = document.getElementById('portrait-msg');
+  try {
+    const res = await fetch('/portrait-cards.json');
+    const data = await res.json();
+    renderPortrait(data.cards || []);
+  } catch (e) {
+    msg.textContent = 'Could not load portrait cards';
+    document.getElementById('btn-regen-portrait').disabled = true;
+  }
+}
+
+function renderPortrait(cards) {
+  const grid = document.getElementById('portrait-grid');
+  const ts = Date.now();
+  grid.innerHTML = cards.map(c =>
+    '<div class="portrait-card" onclick="openLightbox(\'/portrait-output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
+    '  <img class="portrait-img" src="/portrait-output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
+    '  <div class="portrait-body">' +
+    '    <div><strong>' + c.name + '</strong><span class="meta">' + (c.date || '') + '</span></div>' +
+    '  </div>' +
+    '</div>'
+  ).join('');
+}
+
+async function regeneratePortrait() {
+  const btn = document.getElementById('btn-regen-portrait');
+  const msg = document.getElementById('portrait-msg');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  msg.textContent = 'Generating new portrait styles\u2026';
+
+  try {
+    const res = await fetch('/regenerate-portraits', { method: 'POST' });
+    const data = await res.json();
+    if (data.success && data.count > 0) {
+      renderPortrait(data.cards);
+      msg.textContent = '\u2728 ' + data.count + ' portrait cards regenerated!';
+    } else {
+      msg.textContent = '\u274c Failed. Check logs.';
+    }
+  } catch (err) {
+    msg.textContent = '\u274c Error: ' + err.message;
+  }
+
+  btn.disabled = false;
+  btn.classList.remove('loading');
+}
+
+loadPortraitCards();
+
+async function loadCards() {
+  const msg = document.getElementById('promo-msg');
+  try {
+    const res = await fetch('/cards.json');
+    const data = await res.json();
+    render(data.cards || []);
+  } catch (e) {
+    msg.textContent = 'Could not load promo cards';
+    document.getElementById('btn-regen').disabled = true;
+  }
+}
+
+function render(cards) {
+  const grid = document.getElementById('promo-grid');
+  const ts = Date.now();
+  grid.innerHTML = cards.map(c =>
+    '<div class="promo-card" onclick="openLightbox(\'/output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
+    '  <img class="promo-img" src="/output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
+    '  <div class="promo-body">' +
+    '    <div><strong>' + c.name + '</strong><span class="meta">' + (c.date || '') + '</span></div>' +
+    '  </div>' +
+    '</div>'
+  ).join('');
+}
+
+async function regenerate() {
+  const btn = document.getElementById('btn-regen');
+  const msg = document.getElementById('promo-msg');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  msg.textContent = 'Generating new cosmic styles\u2026';
+
+  try {
+    const res = await fetch('/regenerate', { method: 'POST' });
+    const data = await res.json();
+    if (data.success && data.count > 0) {
+      render(data.cards);
+      msg.textContent = '\u2728 ' + data.count + ' cards regenerated!';
+    } else {
+      msg.textContent = '\u274c Failed. Check logs.';
+    }
+  } catch (err) {
+    msg.textContent = '\u274c Error: ' + err.message;
+  }
+
+  btn.disabled = false;
+  btn.classList.remove('loading');
+}
+
+loadCards();
+
+/* ── Lightbox with Effects ── */
+let lbInterval = null;
+let lbEffectIdx = 0;
+const LB_EFFECTS = [
+  { id: 'ef-glare', label: '✨ Glare' },
+  { id: 'ef-blur', label: '🌀 Blur' },
+  { id: 'ef-light', label: '💡 Light' },
+  { id: 'ef-scale', label: '📐 Scale' },
+  { id: 'ef-float', label: '🎈 Float' },
+  { id: 'ef-border', label: '💎 Border' },
+];
+
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-bg').style.backgroundImage = 'url(' + src + ')';
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  startLbEffects(lb);
+}
+
+function closeLightbox() {
+  if (lbInterval) { clearInterval(lbInterval); lbInterval = null; }
+  const bar = document.querySelector('.lightbox .effect-bar');
+  if (bar) bar.remove();
+  const lb = document.getElementById('lightbox');
+  lb.className = 'lightbox';
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+});
+
+function startLbEffects(lb) {
+  lbEffectIdx = 0;
+  const bar = document.createElement('div');
+  bar.className = 'effect-bar';
+  LB_EFFECTS.forEach((ef, i) => {
+    const dot = document.createElement('span');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.dataset.idx = i;
+    dot.title = ef.label;
+    dot.addEventListener('click', () => { lbEffectIdx = i; applyLb(); });
+    bar.appendChild(dot);
+  });
+  lb.appendChild(bar);
+
+  function applyLb() {
+    lb.className = lb.className.split(' ').filter(c => !c.startsWith('ef-')).join(' ');
+    lb.classList.add(LB_EFFECTS[lbEffectIdx].id);
+    bar.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === lbEffectIdx));
+  }
+
+  applyLb();
+  lbInterval = setInterval(() => {
+    lbEffectIdx = (lbEffectIdx + 1) % LB_EFFECTS.length;
+    applyLb();
+  }, 2500);
+}
+
+/* ── Cover card clicks (delegation) ── */
+document.querySelector('.grid').addEventListener('click', e => {
+  const img = e.target.closest('.card-img');
+  if (!img) return;
+  const nameEl = img.closest('.card').querySelector('strong');
+  openLightbox(img.src, nameEl ? nameEl.textContent : '');
+});
+</script>
+</body>
+</html>
