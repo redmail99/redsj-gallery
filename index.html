@@ -662,6 +662,12 @@ async function regenerate() {
 
 loadCards();
 
+/* ── Hide regen buttons on GitHub Pages ── */
+if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+  document.getElementById('btn-regen').style.display = 'none';
+  document.getElementById('btn-regen-portrait').style.display = 'none';
+}
+
 /* ── Lightbox with Effects ── */
 let lbInterval = null;
 let lbEffectIdx = 0;
