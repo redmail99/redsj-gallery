@@ -617,7 +617,7 @@ function renderPortrait(cards) {
   const ts = Date.now();
   grid.innerHTML = cards.map(c =>
     '<div class="portrait-card" onclick="openLightbox('portrait-output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
-    '  <img class="portrait-img" src="/portrait-output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
+    '  <img class="portrait-img" src="portrait-output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
     '  <div class="portrait-body">' +
     '    <div><strong>' + c.name + '</strong><span class="meta">' + (c.date || '') + '</span></div>' +
     '  </div>' +
@@ -668,7 +668,7 @@ function render(cards) {
   const ts = Date.now();
   grid.innerHTML = cards.map(c =>
     '<div class="promo-card" onclick="openLightbox('output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
-    '  <img class="promo-img" src="/output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
+    '  <img class="promo-img" src="output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
     '  <div class="promo-body">' +
     '    <div><strong>' + c.name + '</strong><span class="meta">' + (c.date || '') + '</span></div>' +
     '  </div>' +
