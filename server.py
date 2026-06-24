@@ -11,6 +11,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import time
 from io import BytesIO
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
@@ -21,7 +22,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 # ─── paths ─────────────────────────────────────────────────────────────────
 BASE = Path(__file__).parent
-PORT = int(os.getenv("PORT", "8081"))
+PORT = int(os.getenv("PORT", "8080"))
 FONTS_DIR = Path("/home/redmail99/social-story-generator/fonts")
 OUTPUT_DIR = BASE / "output"
 CACHE_DIR = BASE / ".cache"
@@ -568,6 +569,8 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             subprocess.run([sys.executable, str(BASE / "app.py")], cwd=str(BASE))
             return
+        if self.path == "/":
+            return self._serve_index()
         if self.path == "/cards.json":
             return self._serve_cards_json()
         if self.path == "/portrait-cards.json":
@@ -577,6 +580,67 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path.startswith("/portrait-output/"):
             return self._serve_portrait_output()
         super().do_GET()
+
+    def _serve_index(self):
+        p = BASE / "index.html"
+        if not p.exists():
+            self.send_error(404)
+            return
+        cards = json.loads((BASE / "cards.json").read_text()) if (BASE / "cards.json").exists() else {"cards": []}
+        pcards = json.loads((BASE / "portrait-cards.json").read_text()) if (BASE / "portrait-cards.json").exists() else {"cards": []}
+
+        def _card_html(c, img_prefix: str) -> str:
+            ts = int(time.time() * 1000)
+            img_src = f"{img_prefix}{c['file']}?t={ts}"
+            name = c['name']
+            date = c.get('date', '')
+            meta = f"{c.get('type', '')} · {date}" if date else c.get('type', '')
+            style = "promo-card" if "card_" in c['file'] else "portrait-card"
+            body_cls = "promo-body" if "card_" in c['file'] else "portrait-body"
+            img_cls = "promo-img" if img_prefix == "output/" else "portrait-img"
+            return f"""    <div class="{style}" onclick="openLightbox('{img_src}','{name.replace("'","\\'")}')">
+      <img class="{img_cls}" src="{img_src}" alt="{name}" loading="lazy">
+      <div class="{body_cls}">
+        <div><strong>{name}</strong><span class="meta">{meta}</span></div>
+      </div>
+    </div>"""
+
+        promo = "\n".join(_card_html(c, "output/") for c in cards['cards'])
+        portrait = "\n".join(_card_html(c, "portrait-output/") for c in pcards['cards'])
+
+        html = p.read_text()
+        html = html.replace(
+            '<div class="grid-promo" id="promo-grid"></div>',
+            f'<div class="grid-promo" id="promo-grid">\n{promo}\n  </div>'
+        )
+        html = html.replace(
+            '<div class="grid-portrait" id="portrait-grid"></div>',
+            f'<div class="grid-portrait" id="portrait-grid">\n{portrait}\n  </div>'
+        )
+        # Make lightbox images fill the viewport
+        html = html.replace(
+            '.lb-img {\n    max-width: 90vw; max-height: 90vh;\n    border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.7);\n    object-fit: contain; cursor: default; z-index: 5;\n    position: relative;\n  }',
+            '.lb-img {\n    width: 90vw; height: 90vh;\n    border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.7);\n    object-fit: contain; cursor: default; z-index: 5;\n    position: relative;\n  }'
+        )
+        # Remove New Style buttons
+        html = html.replace(
+            '    <button class="btn-regen" id="btn-regen" onclick="regenerate()">\n      <span class="spinner"></span>\n      <span class="label-text">New Style</span>\n    </button>',
+            ''
+        )
+        html = html.replace(
+            '    <button class="btn-regen" id="btn-regen-portrait" onclick="regeneratePortrait()">\n      <span class="spinner"></span>\n      <span class="label-text">New Style</span>\n    </button>',
+            ''
+        )
+        # Remove regen button hide logic and unused JS functions
+        html = html.replace(
+            '\n/* ── Hide regen buttons on GitHub Pages ── */\nif (location.hostname !== \'localhost\' && location.hostname !== \'127.0.0.1\') {\n  document.getElementById(\'btn-regen\').style.display = \'none\';\n  document.getElementById(\'btn-regen-portrait\').style.display = \'none\';\n}\n',
+            '\n'
+        )
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.end_headers()
+        self.wfile.write(html.encode())
 
     def do_POST(self):
         if self.path == "/regenerate":

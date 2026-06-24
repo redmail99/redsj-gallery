@@ -17,7 +17,7 @@ import requests
 ARTIST_ID = "6hwevbERwOIUzk90IRHUnE"
 ARTIST_NAME = "RedSJ"
 BASE = Path(__file__).parent
-PORT = int(os.getenv("PORT", "8081"))
+PORT = int(os.getenv("PORT", "8080"))
 
 SPOTIFY_URL = f"https://open.spotify.com/artist/{ARTIST_ID}"
 
@@ -616,7 +616,7 @@ function renderPortrait(cards) {
   const grid = document.getElementById('portrait-grid');
   const ts = Date.now();
   grid.innerHTML = cards.map(c =>
-    '<div class="portrait-card" onclick="openLightbox('portrait-output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
+    '<div class="portrait-card" onclick="openLightbox(\'portrait-output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
     '  <img class="portrait-img" src="portrait-output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
     '  <div class="portrait-body">' +
     '    <div><strong>' + c.name + '</strong><span class="meta">' + (c.date || '') + '</span></div>' +
@@ -667,7 +667,7 @@ function render(cards) {
   const grid = document.getElementById('promo-grid');
   const ts = Date.now();
   grid.innerHTML = cards.map(c =>
-    '<div class="promo-card" onclick="openLightbox('output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
+    '<div class="promo-card" onclick="openLightbox(\'output/' + c.file + '?t=' + ts + '\', \'' + c.name + '\')">' +
     '  <img class="promo-img" src="output/' + c.file + '?t=' + ts + '" alt="' + c.name + '" loading="lazy">' +
     '  <div class="promo-body">' +
     '    <div><strong>' + c.name + '</strong><span class="meta">' + (c.date || '') + '</span></div>' +
