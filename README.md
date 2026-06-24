@@ -2,6 +2,8 @@
 
 Album & single cover art gallery for **RedSJ**, with streaming platform links (Spotify, YouTube, Apple Music, Deezer, Tidal) and dynamically generated promo cards.
 
+👉 **[View live site](https://redmail99.github.io/redsj-gallery/)**
+
 ## Features
 
 - Cover art gallery sourced from Spotify
